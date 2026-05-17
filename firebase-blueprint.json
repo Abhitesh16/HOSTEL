@@ -1,0 +1,96 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A student using the portal",
+      "type": "object",
+      "properties": {
+        "uid": { "description": "Auth UID", "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "registrationId": { "type": "string" },
+        "createdAt": { "type": "integer" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Notice": {
+      "title": "Notice",
+      "description": "Bulletin board notice",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "priority": { "enum": ["Urgent", "Event", "General"] },
+        "createdAt": { "type": "integer" }
+      },
+      "required": ["title", "content", "priority", "createdAt"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Hostel booking application",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "registrationId": { "type": "string" },
+        "course": { "type": "string" },
+        "year": { "type": "string" },
+        "roomType": { "enum": ["Single", "Double", "Triple"] },
+        "duration": { "enum": ["6 Months", "12 Months"] },
+        "status": { "enum": ["Pending", "Approved", "Rejected"] },
+        "createdAt": { "type": "integer" }
+      },
+      "required": ["userId", "fullName", "registrationId", "course", "year", "roomType", "duration", "status", "createdAt"]
+    },
+    "Complaint": {
+      "title": "Complaint",
+      "description": "Support complaint ticket",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "roomNumber": { "type": "string" },
+        "urgency": { "enum": ["Low", "Medium", "High"] },
+        "category": { "enum": ["Electrical", "Plumbing", "Internet", "Furniture", "Disciplinary", "Other"] },
+        "description": { "type": "string" },
+        "status": { "enum": ["Draft", "Pending", "In Progress", "Resolved"] },
+        "createdAt": { "type": "integer" }
+      },
+      "required": ["userId", "roomNumber", "urgency", "category", "description", "status", "createdAt"]
+    },
+    "Invoice": {
+      "title": "Invoice",
+      "description": "Fee invoice",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "enum": ["Pending", "Paid"] },
+        "createdAt": { "type": "integer" }
+      },
+      "required": ["userId", "title", "amount", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Student profiles"
+    },
+    "/notices/{noticeId}": {
+      "schema": { "$ref": "#/entities/Notice" },
+      "description": "Notices for all students"
+    },
+    "/bookings/{bookingId}": {
+      "schema": { "$ref": "#/entities/Booking" },
+      "description": "Accommodation bookings"
+    },
+    "/complaints/{complaintId}": {
+      "schema": { "$ref": "#/entities/Complaint" },
+      "description": "Maintenance complaints"
+    },
+    "/invoices/{invoiceId}": {
+      "schema": { "$ref": "#/entities/Invoice" },
+      "description": "Fee invoices"
+    }
+  }
+}
