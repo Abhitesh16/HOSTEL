@@ -1,12 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, signInWithEmailAndPassword, sendPasswordResetEmail, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth, db } from '../firebase';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { User, onAuthStateChanged, signOut, signInWithEmailAndPassword, sendPasswordResetEmail, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { auth } from '../firebase';
 
 interface AuthContextType {
   currentUser: User | null;
   loading: boolean;
-  loginWithGoogle: () => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<void>;
   signupWithEmail: (email: string, password: string, displayName: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -23,38 +21,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        // Create user in Firestore if they don't exist
-        const userRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
-        if (!userSnap.exists()) {
-          try {
-            await setDoc(userRef, {
-              uid: user.uid,
-              email: user.email,
-              displayName: user.displayName || user.email?.split('@')[0] || 'Student',
-              createdAt: serverTimestamp(),
-            });
-          } catch (error) {
-            console.error("Error creating user profile", error);
-          }
-        }
-      }
       setCurrentUser(user);
       setLoading(false);
     });
 
     return unsubscribe;
   }, []);
-
-  const loginWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Error logging in with Google", error);
-    }
-  };
 
   const loginWithEmail = async (email: string, password: string) => {
     try {
@@ -102,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, loading, loginWithGoogle, loginWithEmail, signupWithEmail, resetPassword, logout }}>
+    <AuthContext.Provider value={{ currentUser, loading, loginWithEmail, signupWithEmail, resetPassword, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );

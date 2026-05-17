@@ -14,17 +14,28 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  status: 'Active' | 'Pending';
+  status: 'Active' | 'Pending' | 'Suspended';
 }
 
-let users: User[] = [
-  { id: 'USR001', name: 'Alka Sharma', email: 'alka@example.com', status: 'Active' },
-  { id: 'USR002', name: 'Rahul Bose', email: 'rahul@example.com', status: 'Active' },
-];
+const loadUsers = (): User[] => {
+  const saved = localStorage.getItem('university_users');
+  if (saved) return JSON.parse(saved);
+  return [
+    { id: 'USR001', name: 'Alka Sharma', email: 'alka@example.com', status: 'Active' },
+    { id: 'USR002', name: 'Rahul Bose', email: 'rahul@example.com', status: 'Active' },
+  ];
+};
+
+let users: User[] = loadUsers();
 
 let listeners: (() => void)[] = [];
 
+function saveUsers() {
+  localStorage.setItem('university_users', JSON.stringify(users));
+}
+
 function notifyListeners() {
+  saveUsers();
   for (const listener of listeners) {
     listener();
   }
@@ -42,6 +53,11 @@ export function useUsers() {
   }, []);
 
   const addUser = (name: string, email: string) => {
+    // Check if user with email already exists
+    if (users.find(u => u.email === email)) {
+      return;
+    }
+    
     const newUser: User = {
       id: `USR${String(users.length + 1).padStart(3, '0')}`,
       name,
@@ -52,5 +68,21 @@ export function useUsers() {
     notifyListeners();
   };
 
-  return { users: currentUsers, addUser };
+  const approveUser = (id: string) => {
+    const userIndex = users.findIndex((u) => u.id === id);
+    if (userIndex > -1) {
+      users[userIndex].status = 'Active';
+      notifyListeners();
+    }
+  };
+
+  const suspendUser = (id: string) => {
+    const userIndex = users.findIndex((u) => u.id === id);
+    if (userIndex > -1) {
+      users[userIndex].status = 'Suspended';
+      notifyListeners();
+    }
+  };
+
+  return { users: currentUsers, addUser, approveUser, suspendUser };
 }

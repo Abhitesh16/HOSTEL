@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 export function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { currentUser, loginWithGoogle, logout } = useAuth();
+  const { currentUser, logout } = useAuth();
 
 
   const navigation = [

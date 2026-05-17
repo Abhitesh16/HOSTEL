@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, AlertTriangle, FileText, Settings, CreditCard, LogOut, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUsers } from '../lib/data';
@@ -44,7 +44,13 @@ function PostNotice({ onBack }: { onBack: () => void }) {
 }
 
 function ManageUsers({ onBack }: { onBack: () => void }) {
-  const { users } = useUsers();
+  const { users, approveUser, suspendUser } = useUsers();
+
+  const handleSuspend = async (id: string, name: string) => {
+    if (confirm(`Suspend ${name}?`)) {
+      suspendUser(id);
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 animate-in fade-in slide-in-from-bottom-4">
@@ -64,18 +70,28 @@ function ManageUsers({ onBack }: { onBack: () => void }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
-            {users.map((user, i) => (
-              <tr key={i} className="hover:bg-slate-50 transition-colors">
-                <td className="p-3 text-slate-500 font-mono text-xs">{user.id}</td>
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="p-8 text-center text-slate-500">No users found.</td>
+              </tr>
+            ) : users.map((user, i) => (
+              <tr key={user.id} className="hover:bg-slate-50 transition-colors">
+                <td className="p-3 text-slate-500 font-mono text-xs">{user.id.slice(0, 8)}</td>
                 <td className="p-3 font-medium text-slate-900">{user.name}</td>
                 <td className="p-3 text-slate-500">{user.email}</td>
                 <td className="p-3">
-                  <span className={user.status === 'Active' ? "px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] uppercase font-bold tracking-wider rounded-full" : "px-2 py-1 bg-amber-100 text-amber-700 text-[10px] uppercase font-bold tracking-wider rounded-full"}>
+                  <span className={user.status === 'Active' ? "px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] uppercase font-bold tracking-wider rounded-full" : user.status === 'Suspended' ? "px-2 py-1 bg-rose-100 text-rose-700 text-[10px] uppercase font-bold tracking-wider rounded-full" : "px-2 py-1 bg-amber-100 text-amber-700 text-[10px] uppercase font-bold tracking-wider rounded-full"}>
                     {user.status}
                   </span>
                 </td>
                 <td className="p-3 text-right">
-                  <button className="text-rose-600 hover:text-rose-700 font-bold text-xs" onClick={() => alert(`Suspend ${user.name}?`)}>Suspend</button>
+                  {user.status === 'Pending' ? (
+                    <button className="text-emerald-600 hover:text-emerald-700 font-bold text-xs" onClick={() => approveUser(user.id)}>Approve</button>
+                  ) : user.status === 'Suspended' ? (
+                     <button className="text-emerald-600 hover:text-emerald-700 font-bold text-xs" onClick={() => approveUser(user.id)}>Unsuspend</button>
+                  ) : (
+                    <button className="text-rose-600 hover:text-rose-700 font-bold text-xs" onClick={() => handleSuspend(user.id, user.name)}>Suspend</button>
+                  )}
                 </td>
               </tr>
             ))}
